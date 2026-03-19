@@ -46,6 +46,33 @@ These tools together provided a complete workflow for performing data analysis �
 ## 1. Top Paying Jobs
 To identify top paying job roles, I filtered Data Analyst positions by yearly average salary and job location, focusing on remote jobs, this query highlights top paying jobs in the field.
 
+```sql
+SELECT
+    job_id,
+    company_dim.name AS company_name,
+    job_title,
+    salary_year_avg,
+    job_location,
+    job_schedule_type,
+    job_posted_date
+
+From 
+    job_postings_fact
+
+LEFT JOIN company_dim ON
+    job_postings_fact.company_id = company_dim.company_id
+
+WHERE
+    job_title_short = 'Data Analyst'
+    AND job_location = 'Anywhere'
+    AND salary_year_avg IS NOT NULL
+
+ORDER BY
+    salary_year_avg DESC
+
+LIMIT 10;
+```
+
 ### Key Insights
 - **Wide Salary Range** : Top 10 Data Analyst job roles have salaries ranging all the way from **$184K** to **$650K**, indicating significant salary potential in the field.
 - **Diverse Employers** : Companies like **Mantys**, **Meta**, **AT&T**, etc. are those offering high salaries, showing a broad interest in this field.
@@ -60,6 +87,38 @@ It provides a quick comparison of salary ranges across companies for remote role
 After identifying the highest-paying Data Analyst jobs, I focused on understanding which **skills** were most commonly associated with those roles.  
 The goal was to discover what technical expertise employers value most when offering higher compensation.
 
+``` sql
+WITH top_paying_jobs AS (
+    SELECT
+        job_postings_fact.job_id,
+        company_dim.name AS company_name,
+        job_title,
+        salary_year_avg
+    From 
+        job_postings_fact
+
+    LEFT JOIN company_dim ON
+        job_postings_fact.company_id = company_dim.company_id
+
+    WHERE
+        job_title_short = 'Data Analyst'
+        AND job_location = 'Anywhere'
+        AND salary_year_avg IS NOT NULL
+
+    ORDER BY
+        salary_year_avg DESC
+
+    LIMIT 10
+)
+SELECT 
+    top_paying_jobs.*,
+    skills_dim.skills AS required_skills
+FROM top_paying_jobs
+INNER JOIN skills_job_dim ON top_paying_jobs.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
+ORDER BY 
+    top_paying_jobs.salary_year_avg DESC
+```
 ### Key Insights
 - **SQL** and **Python** consistently appear among the highest-paying roles, confirming their dominance in the analytics space.  
 - Advanced tools like **Snowflake**, **Azure**, and **Tableau** are highly valued by companies offering six-figure salaries.  
@@ -73,6 +132,30 @@ The chart below visualizes the **Top Skills Associated with the Highest Paying J
 ## 3. High Demand Skills
 In this section, I analyzed which **skills are most frequently required** in Data Analyst job postings, regardless of salary.  
 The purpose was to identify the technical competencies that are currently in **highest demand** across the industry.
+
+```sql
+SELECT 
+    skills_dim.skills AS skill_name,
+    COUNT(skills_job_dim.job_id) AS jobs_available
+FROM 
+    skills_dim
+
+INNER JOIN skills_job_dim ON
+    skills_dim.skill_id = skills_job_dim.skill_id
+INNER JOIN job_postings_fact ON
+    skills_job_dim.job_id = job_postings_fact.job_id
+
+WHERE 
+    job_postings_fact.job_title_short = 'Data Analyst'
+
+GROUP BY 
+    skills_dim.skills
+
+ORDER BY 
+    jobs_available DESC
+
+LIMIT 5;
+```
 ### Key Insights
 - **SQL** is the most universally required skill, appearing in the majority of Data Analyst job postings.  
 - **Excel** remains highly relevant, reflecting its continuing importance for quick data manipulation and reporting.  
@@ -90,6 +173,26 @@ These findings highlight that while advanced tools offer an edge, mastering the 
 This section explores which **skills lead to higher salaries** for Data Analysts.  
 Rather than just looking at demand, the focus here is on identifying which specific technical competencies are associated with **above-average compensation**.
 
+```sql
+SELECT
+    skills,
+    ROUND(AVG(salary_year_avg), 0) AS average_salary
+FROM
+    job_postings_fact
+INNER JOIN skills_job_dim ON
+    job_postings_fact.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim ON
+    skills_job_dim.skill_id = skills_dim.skill_id
+WHERE
+    job_postings_fact.job_title_short = 'Data Analyst' AND
+    job_postings_fact.salary_year_avg IS NOT NULL
+GROUP BY
+    skills
+ORDER BY
+    average_salary DESC
+LIMIT 25;
+```
+
 ### Key Insights
 - **Big Data and Cloud Tools** such as **Snowflake**, **Azure**, and **AWS** rank among the top-paying skills.  
 - **Programming Languages** like **Python** and **R** remain valuable for both analytics and advanced modeling tasks.  
@@ -105,6 +208,61 @@ In conclusion, while foundational skills such as SQL and Python are mandatory, d
 ## 5. Most Optimal Skills
 After analyzing both **high-demand** and **high-paying** skills, this section focuses on identifying which skills strike the **best balance between demand and salary**.  
 These are the “sweet spot” skills that maximize employability while also providing strong compensation opportunities.
+
+```sql
+WITH top_demanded_skills AS (
+    SELECT 
+        skills_dim.skill_id,
+        skills_dim.skills AS skill_name,
+        COUNT(skills_job_dim.job_id) AS jobs_available
+    FROM 
+        skills_dim
+
+    INNER JOIN skills_job_dim ON
+        skills_dim.skill_id = skills_job_dim.skill_id
+    INNER JOIN job_postings_fact ON
+        skills_job_dim.job_id = job_postings_fact.job_id
+
+    WHERE 
+        job_postings_fact.job_title_short = 'Data Analyst' AND
+        job_postings_fact.salary_year_avg IS NOT NULL
+
+    GROUP BY 
+        skills_dim.skill_id
+), top_paying_skills AS (
+    SELECT
+        skills_dim.skill_id,
+        skills,
+        ROUND(AVG(salary_year_avg), 0) AS average_salary
+    FROM
+        job_postings_fact
+    INNER JOIN skills_job_dim ON
+        job_postings_fact.job_id = skills_job_dim.job_id
+    INNER JOIN skills_dim ON
+        skills_job_dim.skill_id = skills_dim.skill_id
+    WHERE
+        job_postings_fact.job_title_short = 'Data Analyst' AND
+        job_postings_fact.salary_year_avg IS NOT NULL
+    GROUP BY
+        skills_dim.skill_id 
+)
+
+SELECT
+    top_demanded_skills.skill_id,
+    top_demanded_skills.skill_name,
+    jobs_available,
+    average_salary
+FROM 
+    top_demanded_skills
+INNER JOIN top_paying_skills ON
+    top_demanded_skills.skill_id = top_paying_skills.skill_id
+WHERE
+    jobs_available > 10
+ORDER BY
+    jobs_available DESC,
+    average_salary DESC
+LIMIT 30;
+```
 
 ### Key Insights
 - **SQL**, **Python**, and **Tableau** appear in the overlap between high-demand and high-paying skills, confirming their importance as foundational tools.  
