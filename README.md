@@ -21,7 +21,7 @@ It includes multiple dimensions such as:
 The goal of analyzing this dataset is to understand the **factors that influence salaries, hiring patterns, and demand for analytical skills**.  
 This project reflects how data-driven insights can help professionals and students identify valuable trends in the growing Data Analytics job market.
 
-### The questions I wanted to answer through my
+### The questions I wanted to answer through my project
 SQL queries were:
 1. What are the top-paying data analyst jobs?
 2. What skills are required for these top-paying jobs?
