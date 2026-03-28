@@ -38,7 +38,7 @@ are the most optimal skills to learn?
 - **PostgreSQL** – used for executing SQL queries, data exploration, and analysis  
 - **Visual Studio Code** – the main editor for writing and managing SQL scripts  
 - **Git & GitHub** – for version control, tracking changes, and sharing the project  
-- **Excel / CSV Files** – used as data sources imported into PostgreSQL for analysis  
+- **Excel / CSV Files** – used for visualizations and as data sources imported into PostgreSQL for analysis 
 
 These tools together provided a complete workflow for performing data analysis — from raw data extraction to structured insights and documentation.
 
