@@ -9,7 +9,7 @@ It serves as both a learning exercise in SQL and a practical exploration of how 
 
 ## Background
 
-The dataset used in this project was sourced from the platform: [www.datanerd.tech](www.datanerd.tech)
+The dataset used in this project was sourced from the platform: [www.datanerd.tech](https://datanerd.tech)
 
 It includes multiple dimensions such as:
 - **Company details** – information about the employer and hiring organization  
