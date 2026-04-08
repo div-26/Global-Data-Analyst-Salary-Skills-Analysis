@@ -17,6 +17,16 @@
             "name": "sql_course",
             "database": "sql_course",
             "username": "postgres"
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "SQL Global Job Project",
+            "database": "SQL Global Job Project",
+            "username": "postgres"
         }
     ]
 }
